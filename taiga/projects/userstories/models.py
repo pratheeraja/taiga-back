@@ -25,7 +25,7 @@ from django.utils import timezone
 from djorm_pgarray.fields import TextArrayField
 from picklefield.fields import PickledObjectField
 
-from taiga.base.tags import TaggedMixin
+from taiga.tagging.mixins import TaggedModelMixin
 from taiga.projects.occ import OCCModelMixin
 from taiga.projects.notifications.mixins import WatchedModelMixin
 from taiga.projects.mixins.blocked import BlockedMixin
@@ -55,7 +55,7 @@ class RolePoints(models.Model):
     def project(self):
         return self.user_story.project
 
-class UserStory(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, models.Model):
+class UserStory(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedModelMixin, models.Model):
     ref = models.BigIntegerField(db_index=True, null=True, blank=True, default=None,
                                  verbose_name=_("ref"))
     milestone = models.ForeignKey("milestones.Milestone", null=True, blank=True,
@@ -125,7 +125,7 @@ class UserStory(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, mod
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return "({1}) {0}".format(self.ref, self.subject)
+        return "#{0} {1}".format(self.ref, self.subject)
 
     def __repr__(self):
         return "<UserStory %s>" % (self.id)

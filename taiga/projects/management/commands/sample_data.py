@@ -42,7 +42,12 @@ from taiga.projects.issues.models import *
 from taiga.projects.wiki.models import *
 from taiga.projects.attachments.models import *
 from taiga.projects.custom_attributes.models import *
-from taiga.projects.custom_attributes.choices import TYPES_CHOICES, TEXT_TYPE, MULTILINE_TYPE, DATE_TYPE, URL_TYPE
+from taiga.projects.custom_attributes.choices import TYPES_CHOICES
+from taiga.projects.custom_attributes.choices import TEXT_TYPE
+from taiga.projects.custom_attributes.choices import MULTILINE_TYPE
+from taiga.projects.custom_attributes.choices import DATE_TYPE
+from taiga.projects.custom_attributes.choices import URL_TYPE
+
 from taiga.projects.history.services import take_snapshot
 from taiga.projects.likes.services import add_like
 from taiga.projects.votes.services import add_vote
@@ -317,8 +322,7 @@ class Command(BaseCommand):
                                    priority=self.sd.db_object_from_queryset(Priority.objects.filter(
                                                                                     project=project)),
                                    type=self.sd.db_object_from_queryset(IssueType.objects.filter(
-                                                                                 project=project)),
-                                   tags=self.sd.words(1, 10).split(" "))
+                                                                                 project=project)))
 
         bug.save()
 
@@ -361,8 +365,7 @@ class Command(BaseCommand):
                     user_story=us,
                     finished_date=None,
                     assigned_to = self.sd.db_object_from_queryset(
-                    project.memberships.filter(user__isnull=False)).user,
-                    tags=self.sd.words(1, 10).split(" "))
+                    project.memberships.filter(user__isnull=False)).user)
 
         if closed:
             task.status = project.task_statuses.get(order=4)
@@ -407,8 +410,7 @@ class Command(BaseCommand):
                                       description=self.sd.paragraph(),
                                       milestone=milestone,
                                       status=self.sd.db_object_from_queryset(project.us_statuses.filter(
-                                                                             is_closed=False)),
-                                      tags=self.sd.words(1, 3).split(" "))
+                                                                             is_closed=False)))
 
         for role_points in us.role_points.filter(role__in=computable_project_roles):
             if milestone:
@@ -485,7 +487,6 @@ class Command(BaseCommand):
                                          public_permissions=public_permissions,
                                          total_story_points=self.sd.int(600, 3000),
                                          total_milestones=self.sd.int(5,10),
-                                         tags=self.sd.words(1, 10).split(" "),
                                          is_looking_for_people=counter in LOOKING_FOR_PEOPLE_PROJECTS_POSITIONS,
                                          looking_for_people_note=self.sd.short_sentence(),
                                          is_featured=counter in FEATURED_PROJECTS_POSITIONS,

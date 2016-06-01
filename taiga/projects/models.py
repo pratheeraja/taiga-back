@@ -34,7 +34,7 @@ from django.utils.functional import cached_property
 from django_pgjson.fields import JsonField
 from djorm_pgarray.fields import TextArrayField
 
-from taiga.base.tags import TaggedMixin
+from taiga.tagging.mixins import TaggedModelMixin
 from taiga.base.utils.dicts import dict_sum
 from taiga.base.utils.files import get_file_path
 from taiga.base.utils.sequence import arithmetic_progression
@@ -141,7 +141,7 @@ class ProjectDefaults(models.Model):
         abstract = True
 
 
-class Project(ProjectDefaults, TaggedMixin, models.Model):
+class Project(ProjectDefaults, TaggedModelMixin, models.Model):
     name = models.CharField(max_length=250, null=False, blank=False,
                             verbose_name=_("name"))
     slug = models.SlugField(max_length=250, unique=True, null=False, blank=True,
@@ -213,9 +213,6 @@ class Project(ProjectDefaults, TaggedMixin, models.Model):
     issues_csv_uuid = models.CharField(max_length=32, editable=False,
                                        null=True, blank=True, default=None,
                                        db_index=True)
-
-    tags_colors = TextArrayField(dimension=2, default=[], null=False, blank=True,
-                                 verbose_name=_("tags colors"))
 
     transfer_token = models.CharField(max_length=255, null=True, blank=True, default=None,
                                       verbose_name=_("project transfer token"))

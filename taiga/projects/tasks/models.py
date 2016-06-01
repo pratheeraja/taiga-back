@@ -27,10 +27,10 @@ from djorm_pgarray.fields import TextArrayField
 from taiga.projects.occ import OCCModelMixin
 from taiga.projects.notifications.mixins import WatchedModelMixin
 from taiga.projects.mixins.blocked import BlockedMixin
-from taiga.base.tags import TaggedMixin
+from taiga.tagging.mixins import TaggedModelMixin
 
 
-class Task(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, models.Model):
+class Task(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedModelMixin, models.Model):
     user_story = models.ForeignKey("userstories.UserStory", null=True, blank=True,
                                    related_name="tasks", verbose_name=_("user story"))
     ref = models.BigIntegerField(db_index=True, null=True, blank=True, default=None,
@@ -73,10 +73,6 @@ class Task(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, models.M
         verbose_name = "task"
         verbose_name_plural = "tasks"
         ordering = ["project", "created_date", "ref"]
-        # unique_together = ("ref", "project")
-        permissions = (
-            ("view_task", "Can view task"),
-        )
 
     def save(self, *args, **kwargs):
         if not self._importing or not self.modified_date:
@@ -88,4 +84,4 @@ class Task(OCCModelMixin, WatchedModelMixin, BlockedMixin, TaggedMixin, models.M
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return "({1}) {0}".format(self.ref, self.subject)
+        return "#{0} {1}".format(self.ref, self.subject)

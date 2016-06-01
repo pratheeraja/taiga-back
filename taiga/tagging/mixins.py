@@ -3,7 +3,6 @@
 # Copyright (C) 2014-2016 Jesús Espino <jespinog@gmail.com>
 # Copyright (C) 2014-2016 David Barragán <bameda@dbarragan.com>
 # Copyright (C) 2014-2016 Alejandro Alonso <alejandro.alonso@kaleidos.net>
-# Copyright (C) 2014-2016 Anler Hernández <hello@anler.me>
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
@@ -18,13 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.db import models
+from django.contrib.contenttypes.fields import GenericRelation
 from django.utils.translation import ugettext_lazy as _
 
-from djorm_pgarray.fields import TextArrayField
 
-
-class TaggedMixin(models.Model):
-    tags = TextArrayField(default=None, verbose_name=_("tags"))
+class TaggedModelMixin(models.Model):
+    tags = GenericRelation("tagging.TaggedRelation", verbose_name=_("tags"))
 
     class Meta:
         abstract = True
