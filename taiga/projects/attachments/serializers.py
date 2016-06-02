@@ -22,7 +22,18 @@ from . import services
 from . import models
 
 
-class AttachmentSerializer(serializers.ModelSerializer):
+class BasicAttachmentSerializer(serializers.ModelSerializer):
+    thumbnail_card_url = serializers.SerializerMethodField("get_thumbnail_card_url")
+
+    class Meta:
+        model = models.Attachment
+        fields = ("id", "thumbnail_card_url")
+
+    def get_thumbnail_card_url(self, obj):
+        return services.get_card_image_thumbnail_url(obj)
+
+
+class AttachmentSerializer(BasicAttachmentSerializer):
     url = serializers.SerializerMethodField("get_url")
     thumbnail_card_url = serializers.SerializerMethodField("get_thumbnail_card_url")
     attached_file = serializers.FileField(required=True)
@@ -36,6 +47,3 @@ class AttachmentSerializer(serializers.ModelSerializer):
 
     def get_url(self, obj):
         return obj.attached_file.url
-
-    def get_thumbnail_card_url(self, obj):
-        return services.get_card_image_thumbnail_url(obj)

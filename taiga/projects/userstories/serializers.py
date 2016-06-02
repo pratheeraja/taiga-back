@@ -27,6 +27,7 @@ from taiga.base.utils import json
 
 from taiga.mdrender.service import render as mdrender
 from taiga.projects.models import Project
+from taiga.projects.attachments.serializers import BasicAttachmentSerializer
 from taiga.projects.validators import ProjectExistsValidator, UserStoryStatusExistsValidator
 from taiga.projects.milestones.validators import SprintExistsValidator
 from taiga.projects.userstories.validators import UserStoryExistsValidator
@@ -34,6 +35,7 @@ from taiga.projects.notifications.validators import WatchersValidator
 from taiga.projects.serializers import BasicUserStoryStatusSerializer
 from taiga.projects.notifications.mixins import EditableWatchedResourceModelSerializer
 from taiga.projects.votes.mixins.serializers import VoteResourceSerializerMixin
+from taiga.projects.tasks.serializers import BasicTaskSerializer
 
 from taiga.users.serializers import UserBasicInfoSerializer
 
@@ -113,6 +115,20 @@ class UserStoryListSerializer(UserStorySerializer):
         depth = 0
         read_only_fields = ('created_date', 'modified_date')
         exclude=("description", "description_html")
+
+    @classmethod
+    def include_attachments(cls):
+        cls.base_fields["attachments"] = serializers.SerializerMethodField("get_attachments")
+
+    @classmethod
+    def include_tasks(cls):
+        cls.base_fields["tasks"] = serializers.SerializerMethodField("get_tasks")
+
+    def get_attachments(self, obj):
+        return BasicAttachmentSerializer(obj.attachments.all(), many=True).data
+
+    def get_tasks(self, obj):
+        return BasicTaskSerializer(obj.tasks.all(), many=True).data
 
 
 class UserStoryNeighborsSerializer(NeighborsSerializerMixin, UserStorySerializer):

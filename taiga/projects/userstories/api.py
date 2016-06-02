@@ -83,7 +83,14 @@ class UserStoryViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixi
             return serializers.UserStoryNeighborsSerializer
 
         if self.action == "list":
-            return serializers.UserStoryListSerializer
+            serializer = serializers.UserStoryListSerializer
+            if "include_attachments" in self.request.QUERY_PARAMS:
+                serializer.include_attachments()
+
+            if "include_tasks" in self.request.QUERY_PARAMS:
+                serializer.include_tasks()
+
+            return serializer
 
         return serializers.UserStorySerializer
 
@@ -91,7 +98,9 @@ class UserStoryViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixi
         qs = super().get_queryset()
         qs = qs.prefetch_related("role_points",
                                  "role_points__points",
-                                 "role_points__role")
+                                 "role_points__role",
+                                 "tasks",
+                                 "attachments")
         qs = qs.select_related("milestone",
                                "project",
                                "status",

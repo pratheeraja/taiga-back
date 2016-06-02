@@ -37,6 +37,16 @@ from taiga.users.serializers import UserBasicInfoSerializer
 from . import models
 
 
+class BasicTaskSerializer(serializers.ModelSerializer):
+    is_closed =  serializers.SerializerMethodField("get_is_closed")
+
+    class Meta:
+        model = models.Task
+        fields = ('id', 'ref', 'subject', 'status', 'is_blocked', 'is_iocaine', 'is_closed')
+
+    def get_is_closed(self, obj):
+        return obj.status is not None and obj.status.is_closed
+
 class TaskSerializer(WatchersValidator, VoteResourceSerializerMixin, EditableWatchedResourceModelSerializer, serializers.ModelSerializer):
     tags = TagsField(required=False, default=[])
     external_reference = PgArrayField(required=False)
