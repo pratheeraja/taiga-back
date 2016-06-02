@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('issues', '0006_remove_issue_watchers'),
+        ('tagging', '0001_initial'),
     ]
 
     operations = [

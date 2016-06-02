@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tasks', '0009_auto_20151104_1131'),
+        ('tagging', '0001_initial'),
     ]
 
     operations = [

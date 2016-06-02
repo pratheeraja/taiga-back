@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('userstories', '0011_userstory_tribe_gig'),
+        ('tagging', '0001_initial'),
     ]
 
     operations = [
