@@ -21,38 +21,38 @@ import datetime
 from os import path
 
 
+from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.timezone import now
-from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
+
 
 from sampledatahelper.helper import SampleDataHelper
 
-from taiga.users.models import *
+from taiga.events.apps import disconnect_events_signals
 from taiga.permissions.choices import ANON_PERMISSIONS
-from taiga.projects.choices import BLOCKED_BY_STAFF
-from taiga.projects.models import *
-from taiga.projects.milestones.models import *
-from taiga.projects.notifications.choices import NotifyLevel
-from taiga.projects.services.stats import get_stats_for_project
-from taiga.projects.userstories.models import *
-from taiga.projects.tasks.models import *
-from taiga.projects.issues.models import *
-from taiga.projects.wiki.models import *
 from taiga.projects.attachments.models import *
+from taiga.projects.choices import BLOCKED_BY_STAFF
 from taiga.projects.custom_attributes.models import *
 from taiga.projects.custom_attributes.choices import TYPES_CHOICES
 from taiga.projects.custom_attributes.choices import TEXT_TYPE
 from taiga.projects.custom_attributes.choices import MULTILINE_TYPE
 from taiga.projects.custom_attributes.choices import DATE_TYPE
 from taiga.projects.custom_attributes.choices import URL_TYPE
-
 from taiga.projects.history.services import take_snapshot
+from taiga.projects.issues.models import *
 from taiga.projects.likes.services import add_like
-from taiga.projects.votes.services import add_vote
-from taiga.events.apps import disconnect_events_signals
+from taiga.projects.milestones.models import *
+from taiga.projects.models import *
+from taiga.projects.notifications.choices import NotifyLevel
 from taiga.projects.services.stats import get_stats_for_project
+from taiga.projects.tasks.models import *
+from taiga.projects.userstories.models import *
+from taiga.projects.votes.services import add_vote
+from taiga.projects.wiki.models import *
+from taiga.tagging.models import *
+from taiga.users.models import *
 
 
 ATTACHMENT_SAMPLE_DATA = [
@@ -122,6 +122,11 @@ NUM_ATTACHMENTS = getattr(settings, "SAMPLE_DATA_NUM_ATTACHMENTS", (0, 4))
 NUM_LIKES = getattr(settings, "SAMPLE_DATA_NUM_LIKES", (0, 10))
 NUM_VOTES = getattr(settings, "SAMPLE_DATA_NUM_VOTES", (0, 10))
 NUM_WATCHERS = getattr(settings, "SAMPLE_DATA_NUM_PROJECT_WATCHERS", (0, 8))
+NUM_TAGS_PER_PROJECT = getattr(settings, "SAMPLE_DATA_NUM_TAGS_PER_PROJECT", (0, 10))
+NUM_TAGS_PER_USER_STORY = getattr(settings, "SAMPLE_DATA_NUM_TAGS_PER_USER_STORY", (0, 10))
+NUM_TAGS_PER_TASK = getattr(settings, "SAMPLE_DATA_NUM_TAGS_PER_TASK", (0, 10))
+NUM_TAGS_PER_ISSUE = getattr(settings, "SAMPLE_DATA_NUM_TAGS_PER_ISSUE", (0, 10))
+
 FEATURED_PROJECTS_POSITIONS = [0, 1, 2]
 LOOKING_FOR_PEOPLE_PROJECTS_POSITIONS = [0, 1, 2]
 
@@ -259,6 +264,19 @@ class Command(BaseCommand):
 
             self.create_likes(project)
 
+    def create_tag(self, model, obj, project=None):
+        content_type = ContentType.objects.get_for_model(model)
+
+        tag, is_created = Tag.objects.get_or_create(
+            name=self.sd.word(),
+            project=project
+        )
+
+        tagged_relation, is_created = TaggedRelation.objects.get_or_create(
+            tag=tag,
+            content_type=content_type,
+            object_id=obj.id
+        )
 
     def create_attachment(self, obj, order):
         attached_file = self.sd.file_from_directory(*ATTACHMENT_SAMPLE_DATA)
@@ -340,6 +358,9 @@ class Command(BaseCommand):
                                                                       user__isnull=False)).user
             bug.save()
 
+        for i in range(self.sd.int(*NUM_TAGS_PER_ISSUE)):
+            self.create_tag(Issue, bug, bug.project)
+
         take_snapshot(bug,
                       comment=self.sd.paragraph(),
                       user=bug.owner)
@@ -374,6 +395,9 @@ class Command(BaseCommand):
 
         if task.status.is_closed:
             task.finished_date = self.sd.datetime_between(min_date, max_date)
+
+        for i in range(self.sd.int(*NUM_TAGS_PER_TASK)):
+            self.create_tag(Task, task, task.project)
 
         task.save()
 
@@ -421,6 +445,9 @@ class Command(BaseCommand):
                                               us.project.points.all())
 
             role_points.save()
+
+        for i in range(self.sd.int(*NUM_TAGS_PER_USER_STORY)):
+            self.create_tag(UserStory, us, us.project)
 
         us.save()
 
@@ -487,12 +514,16 @@ class Command(BaseCommand):
                                          public_permissions=public_permissions,
                                          total_story_points=self.sd.int(600, 3000),
                                          total_milestones=self.sd.int(5,10),
+                                         is_kanban_activated=True,
                                          is_looking_for_people=counter in LOOKING_FOR_PEOPLE_PROJECTS_POSITIONS,
                                          looking_for_people_note=self.sd.short_sentence(),
                                          is_featured=counter in FEATURED_PROJECTS_POSITIONS,
                                          blocked_code=blocked_code)
 
-        project.is_kanban_activated = True
+
+        for i in range(self.sd.int(*NUM_TAGS_PER_PROJECT)):
+            self.create_tag(Project, project)
+
         project.save()
         take_snapshot(project, user=project.owner)
 
