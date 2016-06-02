@@ -69,3 +69,7 @@ class TaggedRelation(models.Model):
     object_id = models.PositiveIntegerField(null=False, blank=False, verbose_name=_("object id"))
     content_object = GenericForeignKey("content_type", "object_id")
 
+    class Meta:
+        verbose_name = "tagged_relation"
+        verbose_name_plural = "tagged_relations"
+        ordering = ["tag", "content_type", "object_id"]
