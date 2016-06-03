@@ -6,6 +6,7 @@
 - Now comment owners and project admins can edit existing comments with the history Entry endpoint.
 - Add a new permissions to allow add comments instead of use the existent modify permission for this purpose.
 - Include created, modified and finished dates for tasks in CSV reports
+- User stories and tasks listing API call support extra params to include more data (tasks and attachemnts and attachments, respectively)
 
 ### Misc
 - Lots of small and not so small bugfixes.
