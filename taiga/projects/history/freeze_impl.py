@@ -169,13 +169,6 @@ def wikipage_values(diff):
 # Freezes
 ####################
 
-def _generic_extract(obj:object, fields:list, default=None) -> dict:
-    result = {}
-    for fieldname in fields:
-        result[fieldname] = getattr(obj, fieldname, default)
-    return result
-
-
 @as_tuple
 def extract_attachments(obj) -> list:
     for attach in obj.attachments.all():
@@ -188,6 +181,10 @@ def extract_attachments(obj) -> list:
                "is_deprecated": attach.is_deprecated,
                "description": attach.description,
                "order": attach.order}
+
+@as_tuple
+def extract_tags(obj) -> list:
+    return obj.tags.values_list("tag__name", flat=True)
 
 
 @as_tuple
@@ -227,19 +224,16 @@ def extract_issue_custom_attributes(obj) -> list:
 
 
 def project_freezer(project) -> dict:
-    fields = ("name",
-              "slug",
-              "created_at",
-              "owner_id",
-              "public",
-              "total_milestones",
-              "total_story_points",
-              "tags",
-              "is_backlog_activated",
-              "is_kanban_activated",
-              "is_wiki_activated",
-              "is_issues_activated")
-    return _generic_extract(project, fields)
+    snapshot = {
+        "name": project.name,
+        "slug": project.slug,
+        "description": project.description,
+        "created_date": project.created_date,
+        "owner": project.owner_id,
+        "is_private": project.is_private,
+        "tags": extract_tags(project),
+    }
+    return snapshot
 
 
 def milestone_freezer(milestone) -> dict:
@@ -281,7 +275,7 @@ def userstory_freezer(us) -> dict:
         "client_requirement": us.client_requirement,
         "team_requirement": us.team_requirement,
         "attachments": extract_attachments(us),
-        "tags": us.tags,
+        "tags": extract_tags(us),
         "points": points,
         "from_issue": us.generated_from_issue_id,
         "is_blocked": us.is_blocked,
@@ -308,7 +302,7 @@ def issue_freezer(issue) -> dict:
         "description_html": mdrender(issue.project, issue.description),
         "assigned_to": issue.assigned_to_id,
         "attachments": extract_attachments(issue),
-        "tags": issue.tags,
+        "tags": extract_tags(issue),
         "is_blocked": issue.is_blocked,
         "blocked_note": issue.blocked_note,
         "blocked_note_html": mdrender(issue.project, issue.blocked_note),
@@ -331,7 +325,7 @@ def task_freezer(task) -> dict:
         "attachments": extract_attachments(task),
         "taskboard_order": task.taskboard_order,
         "us_order": task.us_order,
-        "tags": task.tags,
+        "tags": extract_tags(task),
         "user_story": task.user_story_id,
         "is_iocaine": task.is_iocaine,
         "is_blocked": task.is_blocked,

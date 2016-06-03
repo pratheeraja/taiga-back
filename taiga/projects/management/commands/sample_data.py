@@ -271,7 +271,7 @@ class Command(BaseCommand):
             name=self.sd.word(),
             project=project
         )
-
+        print(type(obj), obj.id)
         tagged_relation, is_created = TaggedRelation.objects.get_or_create(
             tag=tag,
             content_type=content_type,
@@ -396,10 +396,10 @@ class Command(BaseCommand):
         if task.status.is_closed:
             task.finished_date = self.sd.datetime_between(min_date, max_date)
 
+        task.save()
+
         for i in range(self.sd.int(*NUM_TAGS_PER_TASK)):
             self.create_tag(Task, task, task.project)
-
-        task.save()
 
         custom_attributes_values = {str(ca.id): self.get_custom_attributes_value(ca.type) for ca
                                        in project.taskcustomattributes.all() if self.sd.boolean()}
