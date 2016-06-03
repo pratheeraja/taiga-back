@@ -24,6 +24,7 @@ from taiga.base.fields import PgArrayField
 from taiga.base.neighbors import NeighborsSerializerMixin
 
 from taiga.mdrender.service import render as mdrender
+from taiga.projects.attachments.serializers import BasicAttachmentSerializer
 from taiga.projects.validators import ProjectExistsValidator
 from taiga.projects.milestones.validators import SprintExistsValidator
 from taiga.projects.tasks.validators import TaskExistsValidator
@@ -87,6 +88,13 @@ class TaskListSerializer(TaskSerializer):
         model = models.Task
         read_only_fields = ('id', 'ref', 'created_date', 'modified_date')
         exclude=("description", "description_html")
+
+    @classmethod
+    def include_attachments(cls):
+        cls.base_fields["attachments"] = serializers.SerializerMethodField("get_attachments")
+
+    def get_attachments(self, obj):
+        return BasicAttachmentSerializer(obj.attachments.all(), many=True).data
 
 
 class TaskNeighborsSerializer(NeighborsSerializerMixin, TaskSerializer):

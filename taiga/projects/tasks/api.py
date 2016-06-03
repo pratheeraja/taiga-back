@@ -53,7 +53,11 @@ class TaskViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
             return serializers.TaskNeighborsSerializer
 
         if self.action == "list":
-            return serializers.TaskListSerializer
+            serializer = serializers.TaskListSerializer
+            if "include_attachments" in self.request.QUERY_PARAMS:
+                serializer.include_attachments()
+
+            return serializer
 
         return serializers.TaskSerializer
 
@@ -91,6 +95,7 @@ class TaskViewSet(OCCResourceMixin, VotedResourceMixin, HistoryResourceMixin, Wa
     def get_queryset(self):
         qs = super().get_queryset()
         qs = self.attach_votes_attrs_to_queryset(qs)
+        qs = qs.prefetch_related("attachments")        
         qs = qs.select_related(
             "milestone",
             "owner",
