@@ -182,6 +182,7 @@ def extract_attachments(obj) -> list:
                "description": attach.description,
                "order": attach.order}
 
+
 @as_tuple
 def extract_tags(obj) -> list:
     return obj.tags.values_list("tag__name", flat=True)
@@ -233,6 +234,7 @@ def project_freezer(project) -> dict:
         "is_private": project.is_private,
         "tags": extract_tags(project),
     }
+
     return snapshot
 
 
