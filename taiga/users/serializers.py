@@ -22,7 +22,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from taiga.base.api import serializers
-from taiga.base.fields import PgArrayField, TagsField
+from taiga.base.fields import PgArrayField
 from taiga.base.utils.thumbnails import get_thumbnail_url
 
 from taiga.projects.models import Project
@@ -104,6 +104,7 @@ class UserSerializer(serializers.ModelSerializer):
             projects = Project.objects.filter(id__in=project_ids)
             return ContactProjectDetailSerializer(projects, many=True).data
 
+
 class UserAdminSerializer(UserSerializer):
     total_private_projects = serializers.SerializerMethodField("get_total_private_projects")
     total_public_projects = serializers.SerializerMethodField("get_total_public_projects")
@@ -134,7 +135,7 @@ class UserAdminSerializer(UserSerializer):
 class UserBasicInfoSerializer(UserSerializer):
     class Meta:
         model = User
-        fields = ("username", "full_name_display","photo", "big_photo", "is_active", "id")
+        fields = ("username", "full_name_display", "photo", "big_photo", "is_active", "id")
 
 
 class RecoverySerializer(serializers.Serializer):
@@ -279,7 +280,7 @@ class LikedObjectSerializer(HighLightedContentSerializer):
 
     def __init__(self, *args, **kwargs):
         # Don't pass the extra ids args up to the superclass
-        self.user_likes  = kwargs.pop("user_likes", {})
+        self.user_likes = kwargs.pop("user_likes", {})
 
         # Instantiate the superclass normally
         super().__init__(*args, **kwargs)
@@ -294,7 +295,7 @@ class VotedObjectSerializer(HighLightedContentSerializer):
 
     def __init__(self, *args, **kwargs):
         # Don't pass the extra ids args up to the superclass
-        self.user_votes  = kwargs.pop("user_votes", {})
+        self.user_votes = kwargs.pop("user_votes", {})
 
         # Instantiate the superclass normally
         super().__init__(*args, **kwargs)
