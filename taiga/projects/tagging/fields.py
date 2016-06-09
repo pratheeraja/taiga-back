@@ -20,7 +20,6 @@ from django.forms import widgets
 from django.utils.translation import ugettext_lazy as _
 from taiga.base.api import serializers
 
-
 from django.core.exceptions import ValidationError
 
 
@@ -34,8 +33,11 @@ class TagsAndTagsColorsField(serializers.WritableField):
                 if isinstance(tag, str):
                     continue
                 if isinstance(tag, (list, tuple)) and len(tag) == 2:
-                    continue
-                raise ValidationError(_("Invalid tag '{value}'. It must be the name or a pair "
+                    if re.match('^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', color):
+                        continue
+                    raise validationerror(_("Invalid tag '{value}'. The color is not a "
+                                            "valid HEX color.").format(value=tag))
+                raise validationerror(_("Invalid tag '{value}'. it must be the name or a pair "
                                         "'[\"name\", \"hex color\"]'.").format(value=tag))
 
         super().__init__(*args, **kwargs)
