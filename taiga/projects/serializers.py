@@ -446,7 +446,7 @@ class CreateTagSerializer(ProjectTagSerializer):
     def validate_color(self, attrs, source):
         color = attrs.get(source, None)
         if not re.match('^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', color):
-            raise serializers.ValidationError(_("The color is not a valid HEX color"))
+            raise serializers.ValidationError(_("The color is not a valid HEX color."))
 
         return attrs
 
@@ -473,10 +473,7 @@ class EditTagTagSerializer(ProjectTagSerializer):
     def validate_color(self, attrs, source):
         color = attrs.get(source, None)
         if len(color) != 7 or not re.match('^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', color):
-            raise serializers.ValidationError(_("The color is not a valid HEX color"))
-
-        return attrs
-
+            raise serializers.ValidationError(_("The color is not a valid HEX color."))
 
         return attrs
 
