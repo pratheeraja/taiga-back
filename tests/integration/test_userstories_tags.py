@@ -12,17 +12,17 @@ import pytest
 pytestmark = pytest.mark.django_db
 
 
-def test_api_task_add_new_tags_with_error(client):
+def test_api_user_story_add_new_tags_with_error(client):
     project = f.ProjectFactory.create()
-    task = f.create_task(project=project, status__project=project, milestone=None, user_story=None)
-    f.MembershipFactory.create(project=project, user=task.owner, is_admin=True)
-    url = reverse("tasks-detail", kwargs={"pk": task.pk})
+    user_story = f.create_userstory(project=project, status__project=project)
+    f.MembershipFactory.create(project=project, user=user_story.owner, is_admin=True)
+    url = reverse("userstories-detail", kwargs={"pk": user_story.pk})
     data = {
         "tags": [],
-        "version": task.version
+        "version": user_story.version
     }
 
-    client.login(task.owner)
+    client.login(user_story.owner)
 
     data["tags"] = [1]
     response = client.json.patch(url, json.dumps(data))
@@ -45,21 +45,21 @@ def test_api_task_add_new_tags_with_error(client):
     assert "tags" in response.data
 
 
-def test_api_task_add_new_tags_without_colors(client):
+def test_api_user_story_add_new_tags_without_colors(client):
     project = f.ProjectFactory.create()
-    task = f.create_task(project=project, status__project=project, milestone=None, user_story=None)
-    f.MembershipFactory.create(project=project, user=task.owner, is_admin=True)
-    url = reverse("tasks-detail", kwargs={"pk": task.pk})
+    user_story = f.create_userstory(project=project, status__project=project)
+    f.MembershipFactory.create(project=project, user=user_story.owner, is_admin=True)
+    url = reverse("userstories-detail", kwargs={"pk": user_story.pk})
     data = {
         "tags": [
             "back",
             "front",
             "ux"
         ],
-        "version": task.version
+        "version": user_story.version
     }
 
-    client.login(task.owner)
+    client.login(user_story.owner)
 
     response = client.json.patch(url, json.dumps(data))
 
@@ -74,21 +74,21 @@ def test_api_task_add_new_tags_without_colors(client):
     assert "back" in tags_colors and "front" in tags_colors and "ux" in tags_colors
 
 
-def test_api_task_add_new_tags_with_colors(client):
+def test_api_user_story_add_new_tags_with_colors(client):
     project = f.ProjectFactory.create()
-    task = f.create_task(project=project, status__project=project, milestone=None, user_story=None)
-    f.MembershipFactory.create(project=project, user=task.owner, is_admin=True)
-    url = reverse("tasks-detail", kwargs={"pk": task.pk})
+    user_story = f.create_userstory(project=project, status__project=project)
+    f.MembershipFactory.create(project=project, user=user_story.owner, is_admin=True)
+    url = reverse("userstories-detail", kwargs={"pk": user_story.pk})
     data = {
         "tags": [
             ["back", "#fff8e7"],
             "front",
             ["ux", "#fabada"]
         ],
-        "version": task.version
+        "version": user_story.version
     }
 
-    client.login(task.owner)
+    client.login(user_story.owner)
 
     response = client.json.patch(url, json.dumps(data))
     assert response.status_code == 200, response.data
@@ -104,13 +104,13 @@ def test_api_task_add_new_tags_with_colors(client):
     assert tags_colors["ux"] == "#fabada"
 
 
-def test_api_create_new_task_with_tags(client):
+def test_api_create_new_user_story_with_tags(client):
     project = f.ProjectFactory.create()
-    status = f.TaskStatusFactory.create(project=project)
-    project.default_task_status = status
+    status = f.UserStoryStatusFactory.create(project=project)
+    project.default_userstory_status = status
     project.save()
     f.MembershipFactory.create(project=project, user=project.owner, is_admin=True)
-    url = reverse("tasks-list")
+    url = reverse("userstories-list")
 
     data = {
         "subject": "Test user story",

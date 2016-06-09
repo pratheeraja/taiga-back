@@ -22,6 +22,7 @@ from taiga.base.api import serializers
 
 from django.core.exceptions import ValidationError
 
+import re
 
 class TagsAndTagsColorsField(serializers.WritableField):
     """
@@ -32,12 +33,13 @@ class TagsAndTagsColorsField(serializers.WritableField):
             for tag in value:
                 if isinstance(tag, str):
                     continue
-                if isinstance(tag, (list, tuple)) and len(tag) == 2:
-                    if re.match('^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', color):
+                if (isinstance(tag, (list, tuple)) and len(tag) == 2 and
+                        isinstance(tag[0], str) and isinstance(tag[1], str)):
+                    if re.match('^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', tag[1]):
                         continue
-                    raise validationerror(_("Invalid tag '{value}'. The color is not a "
+                    raise ValidationError(_("Invalid tag '{value}'. The color is not a "
                                             "valid HEX color.").format(value=tag))
-                raise validationerror(_("Invalid tag '{value}'. it must be the name or a pair "
+                raise ValidationError(_("Invalid tag '{value}'. it must be the name or a pair "
                                         "'[\"name\", \"hex color\"]'.").format(value=tag))
 
         super().__init__(*args, **kwargs)
