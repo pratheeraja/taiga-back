@@ -17,27 +17,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+def _pre_save_new_tags_in_project_tagss_colors(obj):
+    current_project_tags = [t[0] for t in obj.project.tags_colors]
+    new_obj_tags = set()
+    new_tags_colors = {}
+
+    for tag in obj.tags:
+        if isinstance(tag, (list, tuple)):
+            name, color = tag
+
+            if name not in current_project_tags:
+                new_tags_colors[name] = color
+
+            new_obj_tags.add(name)
+        elif isinstance(tag, str):
+            new_obj_tags.add(tag.lower())
+
+    obj.tags = list(new_obj_tags)
+
+    if new_tags_colors:
+        obj.project.tags_colors += [[k, v] for k,v in new_tags_colors.items()]
+        obj.project.save(update_fields=["tags_colors"])
+
+
 class TaggedResourceMixin:
     def pre_save(self, obj):
-        current_project_tags = [t[0] for t in obj.project.tags_colors]
-        new_obj_tags = set()
-        new_tags_colors = {}
-
-        for tag in obj.tags:
-            if isinstance(tag, (list, tuple)):
-                name, color = tag
-
-                if name not in current_project_tags:
-                    new_tags_colors[name] = color
-
-                new_obj_tags.add(name)
-            elif isinstance(tag, str):
-                new_obj_tags.add(tag.lower())
-
-        obj.tags = list(new_obj_tags)
-
-        if new_tags_colors:
-            obj.project.tags_colors += [[k, v] for k,v in new_tags_colors.items()]
-            obj.project.save(update_fields=["tags_colors"])
+        if obj.tags:
+            _pre_save_new_tags_in_project_tagss_colors(obj)
 
         super().pre_save(obj)
