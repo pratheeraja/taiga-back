@@ -1876,6 +1876,24 @@ def test_create_tag(client, settings):
     assert project.tags_colors == [["newtag", "#123123"]]
 
 
+def test_create_tag_without_color(client, settings):
+    user = f.UserFactory.create()
+    project = f.ProjectFactory.create(owner=user)
+    role = f.RoleFactory.create(project=project, permissions=["view_project"])
+    membership = f.MembershipFactory.create(project=project, user=user, role=role, is_admin=True)
+    url = reverse("projects-create-tag", args=(project.id,))
+    client.login(user)
+    data = {
+        "tag": "newtag",
+    }
+
+    client.login(user)
+    response = client.json.post(url, json.dumps(data))
+    assert response.status_code == 200
+    project = Project.objects.get(id=project.pk)
+    assert project.tags_colors[0][0] == "newtag"
+
+
 def test_edit_tag_only_name(client, settings):
     user = f.UserFactory.create()
     project = f.ProjectFactory.create(owner=user, tags_colors=[("tag", "#123123")])

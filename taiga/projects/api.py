@@ -418,6 +418,7 @@ class ProjectViewSet(LikedResourceMixin, HistoryResourceMixin,
         services.create_tag(project, data.get("tag"), data.get("color"))
         return response.Ok()
 
+
     @detail_route(methods=["POST"])
     def edit_tag(self, request, pk=None):
         project = self.get_object()

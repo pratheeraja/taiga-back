@@ -434,7 +434,7 @@ class ProjectTagSerializer(serializers.Serializer):
 
 class CreateTagSerializer(ProjectTagSerializer):
     tag = serializers.CharField()
-    color = serializers.CharField()
+    color = serializers.CharField(required=False)
 
     def validate_tag(self, attrs, source):
         tag = attrs.get(source, None)
